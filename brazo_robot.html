@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brazo Robótico - Producto Vectorial Interactivo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        canvas {
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .control-group {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .control-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #667eea;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+        .value-display {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .info-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .info-box h3 {
+            margin-top: 0;
+            border-bottom: 2px solid white;
+            padding-bottom: 10px;
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        .metric-value {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Brazo Robótico: Producto Vectorial Interactivo</h1>
+        
+        <div class="content">
+            <div>
+                <canvas id="robotCanvas" width="500" height="500"></canvas>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label>
+                        Longitud Eslabón 1 (L₁): 
+                        <span class="value-display" id="l1Display">2.0 m</span>
+                    </label>
+                    <input type="range" id="l1Slider" min="1" max="4" step="0.1" value="2">
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Longitud Eslabón 2 (L₂): 
+                        <span class="value-display" id="l2Display">2.3 m</span>
+                    </label>
+                    <input type="range" id="l2Slider" min="1" max="4" step="0.1" value="2.3">
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Ángulo θ₁ (Eslabón 1): 
+                        <span class="value-display" id="theta1Display">45°</span>
+                    </label>
+                    <input type="range" id="theta1Slider" min="0" max="360" step="1" value="45">
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Ángulo θ₂ (Eslabón 2): 
+                        <span class="value-display" id="theta2Display">30°</span>
+                    </label>
+                    <input type="range" id="theta2Slider" min="-180" max="180" step="1" value="30">
+                </div>
+                
+                <div class="info-box">
+                    <h3>📊 Métricas de la Configuración</h3>
+                    <div class="metric">
+                        <span>Área del Paralelogramo:</span>
+                        <span class="metric-value" id="areaDisplay">0 m²</span>
+                    </div>
+                    <div class="metric">
+                        <span>Magnitud del Vector Normal:</span>
+                        <span class="metric-value" id="normalDisplay">0 m²</span>
+                    </div>
+                    <div class="metric">
+                        <span>Estado de Configuración:</span>
+                        <span class="metric-value" id="statusDisplay">Normal</span>
+                    </div>
+                    <div class="metric">
+                        <span>Alcance del Efector Final:</span>
+                        <span class="metric-value" id="reachDisplay">0 m</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('robotCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Sliders
+        const l1Slider = document.getElementById('l1Slider');
+        const l2Slider = document.getElementById('l2Slider');
+        const theta1Slider = document.getElementById('theta1Slider');
+        const theta2Slider = document.getElementById('theta2Slider');
+        
+        // Displays
+        const l1Display = document.getElementById('l1Display');
+        const l2Display = document.getElementById('l2Display');
+        const theta1Display = document.getElementById('theta1Display');
+        const theta2Display = document.getElementById('theta2Display');
+        const areaDisplay = document.getElementById('areaDisplay');
+        const normalDisplay = document.getElementById('normalDisplay');
+        const statusDisplay = document.getElementById('statusDisplay');
+        const reachDisplay = document.getElementById('reachDisplay');
+        
+        // Escala de dibujo
+        const scale = 60; // píxeles por metro
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height - 50;
+        
+        function degToRad(deg) {
+            return deg * Math.PI / 180;
+        }
+        
+        function drawArrow(ctx, fromX, fromY, toX, toY, color, width = 3) {
+            const headlen = 15;
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const angle = Math.atan2(dy, dx);
+            
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.stroke();
+            
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), 
+                      toY - headlen * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), 
+                      toY - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        function drawRobot() {
+            // Limpiar canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Obtener valores
+            const L1 = parseFloat(l1Slider.value);
+            const L2 = parseFloat(l2Slider.value);
+            const theta1 = degToRad(parseFloat(theta1Slider.value));
+            const theta2 = degToRad(parseFloat(theta2Slider.value));
+            
+            // Calcular posiciones
+            const joint1X = centerX + L1 * Math.cos(theta1) * scale;
+            const joint1Y = centerY - L1 * Math.sin(theta1) * scale;
+            
+            const theta_total = theta1 + theta2;
+            const endX = joint1X + L2 * Math.cos(theta_total) * scale;
+            const endY = joint1Y - L2 * Math.sin(theta_total) * scale;
+            
+            // Vectores para el producto cruz (solo componentes X e Y, Z=0)
+            const L1_vec = {
+                x: L1 * Math.cos(theta1),
+                y: L1 * Math.sin(theta1),
+                z: 0
+            };
+            
+            const L2_vec = {
+                x: L2 * Math.cos(theta_total),
+                y: L2 * Math.sin(theta_total),
+                z: 0
+            };
+            
+            // Producto vectorial (solo componente Z es no-cero en 2D)
+            const crossZ = L1_vec.x * L2_vec.y - L1_vec.y * L2_vec.x;
+            const area = Math.abs(crossZ);
+            
+            // Dibujar paralelogramo
+            ctx.fillStyle = 'rgba(0, 200, 255, 0.3)';
+            ctx.strokeStyle = 'rgba(0, 150, 200, 0.8)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(joint1X, joint1Y);
+            ctx.lineTo(endX, endY);
+            ctx.lineTo(centerX + (endX - joint1X), centerY + (endY - joint1Y));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Dibujar eslabón 1 (azul)
+            drawArrow(ctx, centerX, centerY, joint1X, joint1Y, '#2563eb', 5);
+            
+            // Dibujar eslabón 2 (rojo)
+            drawArrow(ctx, joint1X, joint1Y, endX, endY, '#dc2626', 5);
+            
+            // Dibujar articulaciones
+            ctx.fillStyle = '#1f2937';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 8, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(joint1X, joint1Y, 8, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.fillStyle = '#dc2626';
+            ctx.beginPath();
+            ctx.arc(endX, endY, 10, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Etiquetas
+            ctx.fillStyle = '#2563eb';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('L₁', centerX + (joint1X - centerX)/2 - 20, centerY + (joint1Y - centerY)/2 - 10);
+            
+            ctx.fillStyle = '#dc2626';
+            ctx.fillText('L₂', joint1X + (endX - joint1X)/2 - 20, joint1Y + (endY - joint1Y)/2 - 10);
+            
+            // Actualizar displays
+            l1Display.textContent = L1.toFixed(1) + ' m';
+            l2Display.textContent = L2.toFixed(1) + ' m';
+            theta1Display.textContent = theta1Slider.value + '°';
+            theta2Display.textContent = theta2Slider.value + '°';
+            areaDisplay.textContent = area.toFixed(2) + ' m²';
+            normalDisplay.textContent = area.toFixed(2) + ' m²';
+            
+            // Estado de configuración
+            if (area < 0.5) {
+                statusDisplay.textContent = '⚠️ Singular';
+                statusDisplay.style.color = '#ef4444';
+            } else if (area > L1 * L2 * 0.8) {
+                statusDisplay.textContent = '✓ Óptima';
+                statusDisplay.style.color = '#10b981';
+            } else {
+                statusDisplay.textContent = '✓ Normal';
+                statusDisplay.style.color = '#3b82f6';
+            }
+            
+            // Alcance
+            const reach = Math.sqrt(Math.pow(endX - centerX, 2) + Math.pow(endY - centerY, 2)) / scale;
+            reachDisplay.textContent = reach.toFixed(2) + ' m';
+        }
+        
+        // Event listeners
+        l1Slider.addEventListener('input', drawRobot);
+        l2Slider.addEventListener('input', drawRobot);
+        theta1Slider.addEventListener('input', drawRobot);
+        theta2Slider.addEventListener('input', drawRobot);
+        
+        // Dibujar inicial
+        drawRobot();
+    </script>
+</body>
+</html>
