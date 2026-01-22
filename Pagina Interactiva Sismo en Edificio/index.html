@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis Modal - Edificio de 2 Pisos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #1e3c72;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        .content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+        .visualization {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            gap: 20px;
+        }
+        canvas {
+            border: 2px solid #1e3c72;
+            border-radius: 10px;
+            background: #f8f9fa;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .control-group {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #1e3c72;
+        }
+        .control-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #1e3c72;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1e3c72;
+            cursor: pointer;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1e3c72;
+            cursor: pointer;
+            border: none;
+        }
+        .value-display {
+            display: inline-block;
+            background: #1e3c72;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .info-box {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .info-box h3 {
+            margin-top: 0;
+            border-bottom: 2px solid white;
+            padding-bottom: 10px;
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 15px;
+        }
+        .metric-value {
+            font-weight: bold;
+            font-size: 17px;
+        }
+        .equation-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            font-size: 16px;
+            color: #333;
+        }
+        .mode-indicator {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+        }
+        .mode-box {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .mode1 {
+            background: rgba(52, 211, 153, 0.3);
+            border: 2px solid #34d399;
+        }
+        .mode2 {
+            background: rgba(251, 146, 60, 0.3);
+            border: 2px solid #fb923c;
+        }
+        button {
+            background: #1e3c72;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #2a5298;
+        }
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .preset-buttons button {
+            flex: 1;
+            min-width: 120px;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+        @media (max-width: 1024px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏢 Análisis Modal: Modos de Vibración Sísmica</h1>
+        <p class="subtitle">Edificio de 2 Pisos - NCh433 (Norma Chilena)</p>
+        
+        <div class="content">
+            <div>
+                <div class="visualization">
+                    <div>
+                        <h4 style="text-align: center; color: #34d399;">Modo 1: Traslación</h4>
+                        <canvas id="mode1Canvas" width="200" height="400"></canvas>
+                    </div>
+                    <div>
+                        <h4 style="text-align: center; color: #fb923c;">Modo 2: Balanceo</h4>
+                        <canvas id="mode2Canvas" width="200" height="400"></canvas>
+                    </div>
+                    <div>
+                        <h4 style="text-align: center; color: #1e3c72;">Combinación</h4>
+                        <canvas id="combinedCanvas" width="200" height="400"></canvas>
+                    </div>
+                </div>
+                
+                <div class="equation-box">
+                    <strong>Descomposición Modal:</strong><br>
+                    <span id="equationDisplay">u = q₁φ₁ + q₂φ₂</span>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label>
+                        Coeficiente q₁ (Modo 1 - Traslación): 
+                        <span class="value-display" id="q1Display">2.5 cm</span>
+                    </label>
+                    <input type="range" id="q1Slider" min="-10" max="10" step="0.5" value="2.5">
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Coeficiente q₂ (Modo 2 - Balanceo): 
+                        <span class="value-display" id="q2Display">2.5 cm</span>
+                    </label>
+                    <input type="range" id="q2Slider" min="-10" max="10" step="0.5" value="2.5">
+                </div>
+                
+                <div class="control-group">
+                    <label style="color: #666; font-size: 14px;">Configuraciones Predefinidas:</label>
+                    <div class="preset-buttons">
+                        <button onclick="setPreset(2.5, 2.5)">Caso Sismo<br>(5, 0)</button>
+                        <button onclick="setPreset(5, 0)">Solo Modo 1<br>(5, 5)</button>
+                        <button onclick="setPreset(0, 5)">Solo Modo 2<br>(5, -5)</button>
+                        <button onclick="setPreset(0, 0)">Reposo<br>(0, 0)</button>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <h3>📊 Estado de Deformación</h3>
+                    
+                    <div class="mode-indicator">
+                        <div class="mode-box mode1">
+                            Modo 1<br>
+                            <span id="mode1Contribution">50%</span>
+                        </div>
+                        <div class="mode-box mode2">
+                            Modo 2<br>
+                            <span id="mode2Contribution">50%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric">
+                        <span>Desplazamiento Piso 1:</span>
+                        <span class="metric-value" id="floor1Display">5.0 cm</span>
+                    </div>
+                    <div class="metric">
+                        <span>Desplazamiento Piso 2:</span>
+                        <span class="metric-value" id="floor2Display">0.0 cm</span>
+                    </div>
+                    <div class="metric">
+                        <span>Deriva (diferencial):</span>
+                        <span class="metric-value" id="driftDisplay">5.0 cm</span>
+                    </div>
+                    <div class="metric">
+                        <span>Modo Dominante:</span>
+                        <span class="metric-value" id="dominantDisplay">Equilibrado</span>
+                    </div>
+                </div>
+                
+                <div style="background: #e8f4f8; padding: 15px; border-radius: 8px; border-left: 4px solid #0891b2;">
+                    <strong style="color: #0891b2;">💡 Interpretación Física:</strong>
+                    <p id="interpretationText" style="margin: 10px 0 0 0; color: #333; font-size: 14px; line-height: 1.6;">
+                        Ambos modos contribuyen por igual. El Modo 1 desplaza ambos pisos (+2.5, +2.5) y el Modo 2 los separa (+2.5, -2.5), resultando en (5, 0).
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const mode1Canvas = document.getElementById('mode1Canvas');
+        const mode2Canvas = document.getElementById('mode2Canvas');
+        const combinedCanvas = document.getElementById('combinedCanvas');
+        
+        const ctx1 = mode1Canvas.getContext('2d');
+        const ctx2 = mode2Canvas.getContext('2d');
+        const ctx3 = combinedCanvas.getContext('2d');
+        
+        const q1Slider = document.getElementById('q1Slider');
+        const q2Slider = document.getElementById('q2Slider');
+        
+        const scale = 8; // píxeles por cm
+        
+        function drawBuilding(ctx, displacement1, displacement2, color1 = '#34d399', color2 = '#fb923c', showOriginal = true) {
+            const width = ctx.canvas.width;
+            const height = ctx.canvas.height;
+            const centerX = width / 2;
+            const groundY = height - 30;
+            const floorHeight = 120;
+            const buildingWidth = 60;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            // Dibujar suelo
+            ctx.fillStyle = '#6b7280';
+            ctx.fillRect(0, groundY, width, 30);
+            ctx.fillStyle = '#4b5563';
+            for (let i = 0; i < width; i += 20) {
+                ctx.fillRect(i, groundY, 10, 30);
+            }
+            
+            // Posición original (gris claro) si se muestra
+            if (showOriginal) {
+                ctx.strokeStyle = '#d1d5db';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                
+                // Piso 1 original
+                ctx.strokeRect(centerX - buildingWidth/2, groundY - floorHeight, buildingWidth, floorHeight);
+                // Piso 2 original
+                ctx.strokeRect(centerX - buildingWidth/2, groundY - 2*floorHeight, buildingWidth, floorHeight);
+                
+                ctx.setLineDash([]);
+            }
+            
+            // Calcular desplazamientos en píxeles
+            const disp1Px = displacement1 * scale;
+            const disp2Px = displacement2 * scale;
+            
+            // Dibujar estructura deformada
+            // Piso 1
+            ctx.fillStyle = color1 + '40';
+            ctx.strokeStyle = color1;
+            ctx.lineWidth = 3;
+            ctx.fillRect(centerX - buildingWidth/2 + disp1Px, groundY - floorHeight, buildingWidth, floorHeight);
+            ctx.strokeRect(centerX - buildingWidth/2 + disp1Px, groundY - floorHeight, buildingWidth, floorHeight);
+            
+            // Columnas piso 1
+            ctx.fillStyle = color1;
+            ctx.fillRect(centerX - buildingWidth/2 + disp1Px, groundY - floorHeight, 8, floorHeight);
+            ctx.fillRect(centerX + buildingWidth/2 - 8 + disp1Px, groundY - floorHeight, 8, floorHeight);
+            
+            // Piso 2
+            ctx.fillStyle = color2 + '40';
+            ctx.strokeStyle = color2;
+            ctx.lineWidth = 3;
+            ctx.fillRect(centerX - buildingWidth/2 + disp2Px, groundY - 2*floorHeight, buildingWidth, floorHeight);
+            ctx.strokeRect(centerX - buildingWidth/2 + disp2Px, groundY - 2*floorHeight, buildingWidth, floorHeight);
+            
+            // Columnas piso 2
+            ctx.fillStyle = color2;
+            ctx.fillRect(centerX - buildingWidth/2 + disp2Px, groundY - 2*floorHeight, 8, floorHeight);
+            ctx.fillRect(centerX + buildingWidth/2 - 8 + disp2Px, groundY - 2*floorHeight, 8, floorHeight);
+            
+            // Flechas de desplazamiento
+            if (Math.abs(displacement1) > 0.1) {
+                drawDisplacementArrow(ctx, centerX, groundY - floorHeight/2, disp1Px, color1);
+            }
+            if (Math.abs(displacement2) > 0.1) {
+                drawDisplacementArrow(ctx, centerX, groundY - 1.5*floorHeight, disp2Px, color2);
+            }
+            
+            // Etiquetas de desplazamiento
+            ctx.fillStyle = '#1f2937';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`${displacement1.toFixed(1)} cm`, centerX + disp1Px, groundY - floorHeight - 10);
+            ctx.fillText(`${displacement2.toFixed(1)} cm`, centerX + disp2Px, groundY - 2*floorHeight - 10);
+        }
+        
+        function drawDisplacementArrow(ctx, x, y, displacement, color) {
+            const arrowLength = Math.abs(displacement);
+            const direction = displacement > 0 ? 1 : -1;
+            
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.lineWidth = 2;
+            
+            // Línea
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + displacement, y);
+            ctx.stroke();
+            
+            // Punta de flecha
+            ctx.beginPath();
+            ctx.moveTo(x + displacement, y);
+            ctx.lineTo(x + displacement - direction * 10, y - 5);
+            ctx.lineTo(x + displacement - direction * 10, y + 5);
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        function updateVisualization() {
+            const q1 = parseFloat(q1Slider.value);
+            const q2 = parseFloat(q2Slider.value);
+            
+            // Modo 1: φ₁ = [1, 1]
+            const mode1_floor1 = q1;
+            const mode1_floor2 = q1;
+            
+            // Modo 2: φ₂ = [1, -1]
+            const mode2_floor1 = q2;
+            const mode2_floor2 = -q2;
+            
+            // Combinación
+            const combined_floor1 = q1 + q2;
+            const combined_floor2 = q1 - q2;
+            
+            // Dibujar edificios
+            drawBuilding(ctx1, mode1_floor1, mode1_floor2, '#34d399', '#34d399', true);
+            drawBuilding(ctx2, mode2_floor1, mode2_floor2, '#fb923c', '#fb923c', true);
+            drawBuilding(ctx3, combined_floor1, combined_floor2, '#3b82f6', '#3b82f6', true);
+            
+            // Actualizar displays
+            document.getElementById('q1Display').textContent = q1.toFixed(1) + ' cm';
+            document.getElementById('q2Display').textContent = q2.toFixed(1) + ' cm';
+            document.getElementById('floor1Display').textContent = combined_floor1.toFixed(1) + ' cm';
+            document.getElementById('floor2Display').textContent = combined_floor2.toFixed(1) + ' cm';
+            
+            const drift = Math.abs(combined_floor1 - combined_floor2);
+            document.getElementById('driftDisplay').textContent = drift.toFixed(1) + ' cm';
+            
+            // Ecuación
+            document.getElementById('equationDisplay').innerHTML = 
+                `<strong>u</strong> = ${q1.toFixed(1)}·φ₁ + ${q2.toFixed(1)}·φ₂ = [${combined_floor1.toFixed(1)}, ${combined_floor2.toFixed(1)}]ᵀ cm`;
+            
+            // Contribución porcentual
+            const totalEnergy = Math.abs(q1) + Math.abs(q2);
+            const contrib1 = totalEnergy > 0 ? (Math.abs(q1) / totalEnergy * 100) : 50;
+            const contrib2 = totalEnergy > 0 ? (Math.abs(q2) / totalEnergy * 100) : 50;
+            
+            document.getElementById('mode1Contribution').textContent = contrib1.toFixed(0) + '%';
+            document.getElementById('mode2Contribution').textContent = contrib2.toFixed(0) + '%';
+            
+            // Modo dominante
+            let dominant = 'Equilibrado';
+            if (Math.abs(q1) > Math.abs(q2) * 1.5) {
+                dominant = 'Modo 1 (Traslación)';
+            } else if (Math.abs(q2) > Math.abs(q1) * 1.5) {
+                dominant = 'Modo 2 (Balanceo)';
+            }
+            document.getElementById('dominantDisplay').textContent = dominant;
+            
+            // Interpretación
+            updateInterpretation(q1, q2, combined_floor1, combined_floor2);
+        }
+        
+        function updateInterpretation(q1, q2, floor1, floor2) {
+            const interpText = document.getElementById('interpretationText');
+            
+            if (Math.abs(q1) < 0.1 && Math.abs(q2) < 0.1) {
+                interpText.textContent = 'El edificio está en su posición de reposo. No hay deformación ni desplazamientos.';
+            } else if (Math.abs(q2) < 0.1) {
+                interpText.textContent = `Solo el Modo 1 está activo. El edificio se desplaza como un bloque rígido ${q1 > 0 ? 'hacia la derecha' : 'hacia la izquierda'}, sin deformación relativa entre pisos.`;
+            } else if (Math.abs(q1) < 0.1) {
+                interpText.textContent = `Solo el Modo 2 está activo. Los pisos se mueven en direcciones opuestas (balanceo puro), generando máxima deriva entre niveles sin traslación del centro de masa.`;
+            } else if (Math.abs(floor2) < 0.5) {
+                interpText.textContent = `Configuración del sismo NCh433: El piso 1 se desplaza ${floor1.toFixed(1)} cm mientras el piso 2 permanece cerca de su posición original. Ambos modos contribuyen significativamente, cancelándose en el nivel superior pero sumándose en el inferior.`;
+            } else {
+                const sign1 = floor1 > 0 ? '+' : '';
+                const sign2 = floor2 > 0 ? '+' : '';
+                interpText.textContent = `Combinación modal general: Modo 1 aporta (${sign1}${q1.toFixed(1)}, ${sign1}${q1.toFixed(1)}) y Modo 2 aporta (${q2 > 0 ? '+' : ''}${q2.toFixed(1)}, ${-q2 > 0 ? '+' : ''}${(-q2).toFixed(1)}), resultando en desplazamientos de ${floor1.toFixed(1)} cm y ${floor2.toFixed(1)} cm respectivamente.`;
+            }
+        }
+        
+        function setPreset(q1Val, q2Val) {
+            q1Slider.value = q1Val;
+            q2Slider.value = q2Val;
+            updateVisualization();
+        }
+        
+        // Event listeners
+        q1Slider.addEventListener('input', updateVisualization);
+        q2Slider.addEventListener('input', updateVisualization);
+        
+        // Inicializar
+        updateVisualization();
+    </script>
+</body>
+</html>

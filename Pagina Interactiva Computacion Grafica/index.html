@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cambio de Base - Cámara Isométrica</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        .canvas-container {
+            position: relative;
+        }
+        canvas {
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            background: #1a1a2e;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: block;
+            margin: 10px auto;
+        }
+        .canvas-label {
+            text-align: center;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+            font-size: 18px;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .control-group {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .control-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #667eea;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .info-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .info-box h3 {
+            margin-top: 0;
+            border-bottom: 2px solid white;
+            padding-bottom: 10px;
+        }
+        .matrix-display {
+            font-family: 'Courier New', monospace;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+            font-size: 16px;
+        }
+        .interpretation-box {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #0891b2;
+            margin-top: 15px;
+        }
+        .interpretation-box strong {
+            color: #0891b2;
+        }
+        .interpretation-box p {
+            margin: 10px 0 0 0;
+            color: #333;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .sprite {
+            width: 40px;
+            height: 40px;
+        }
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .legend {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border: 2px solid white;
+            border-radius: 3px;
+        }
+        @media (max-width: 1200px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Pipeline Gráfico: Cambio de Base</h1>
+        <p class="subtitle">Rotación de Nave Espacial en Cámara Isométrica (45°)</p>
+        
+        <div class="content">
+            <div>
+                <div class="canvas-container">
+                    <div class="canvas-label">🌍 Base Mundial Estándar (B)</div>
+                    <canvas id="worldCanvas" width="500" height="500"></canvas>
+                </div>
+                
+                <div class="canvas-container">
+                    <div class="canvas-label">📹 Base de Cámara Isométrica (B')</div>
+                    <canvas id="cameraCanvas" width="500" height="500"></canvas>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label>🚀 Control de Rotación de la Nave</label>
+                    <button onclick="rotateLeft()">⬅️ Rotar 90° Izquierda</button>
+                    <div class="button-grid">
+                        <button onclick="rotateRight()">➡️ Rotar Derecha</button>
+                        <button onclick="reset()">🔄 Reset</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>🎯 Prueba de Vectores Base</label>
+                    <div class="button-grid">
+                        <button onclick="testVector(1, 0)">Probar e₁ = (1,0)</button>
+                        <button onclick="testVector(0, 1)">Probar e₂ = (0,1)</button>
+                        <button onclick="testVector(1, 1)">Probar v₁ = (1,1)</button>
+                        <button onclick="testVector(-1, 1)">Probar v₂ = (-1,1)</button>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <h3>📐 Matrices de Transformación</h3>
+                    
+                    <div class="legend">
+                        <strong>Bases:</strong>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #ff0066;"></div>
+                            <span>B: Base Mundial Estándar {(1,0), (0,1)}</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #00ff88;"></div>
+                            <span>B': Base Isométrica {(1,1), (-1,1)}</span>
+                        </div>
+                    </div>
+                    
+                    <strong>Rotación en Base Mundial [R]ᵦ:</strong>
+                    <div class="matrix-display" id="matrixB">
+                        [ 0  -1 ]<br>
+                        [ 1   0 ]
+                    </div>
+                    
+                    <strong>Rotación en Base Cámara [R]ᵦ':</strong>
+                    <div class="matrix-display" id="matrixBprime">
+                        [ 0  -1 ]<br>
+                        [ 1   0 ]
+                    </div>
+                    
+                    <strong>Ángulo de Rotación Actual:</strong>
+                    <div class="matrix-display" id="angleDisplay">
+                        0°
+                    </div>
+                </div>
+                
+                <div class="interpretation-box">
+                    <strong>💡 Interpretación:</strong>
+                    <p id="interpretationText">
+                        Las matrices son idénticas porque la rotación de 90° es una operación intrínseca que se mantiene igual independientemente del sistema de coordenadas. La cámara isométrica (45°) es ortogonal, por lo que preserva las propiedades de la rotación.
+                    </p>
+                </div>
+                
+                <div class="control-group">
+                    <label>🎨 Propiedades Invariantes (Matrices Semejantes)</label>
+                    <div style="background: white; padding: 15px; border-radius: 5px; font-size: 14px;">
+                        <div style="margin: 5px 0;">✓ <strong>Determinante:</strong> <span id="detDisplay">1</span> (preserva área)</div>
+                        <div style="margin: 5px 0;">✓ <strong>Traza:</strong> <span id="traceDisplay">0</span></div>
+                        <div style="margin: 5px 0;">✓ <strong>Valores propios:</strong> ±i (rotación pura)</div>
+                        <div style="margin: 5px 0;">✓ <strong>Tipo:</strong> Matriz Ortogonal</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const worldCanvas = document.getElementById('worldCanvas');
+        const cameraCanvas = document.getElementById('cameraCanvas');
+        const ctxWorld = worldCanvas.getContext('2d');
+        const ctxCamera = cameraCanvas.getContext('2d');
+        
+        let currentAngle = 0; // Ángulo actual de la nave en grados
+        let testVec = null; // Vector de prueba
+        
+        // Matriz de rotación de 90° (en radianes)
+        const rotationMatrix = [
+            [0, -1],
+            [1, 0]
+        ];
+        
+        // Matriz de cambio de base P (columnas son vectores de B')
+        const P = [
+            [1, -1],
+            [1, 1]
+        ];
+        
+        // Inversa de P
+        const Pinv = [
+            [0.5, 0.5],
+            [-0.5, 0.5]
+        ];
+        
+        function multiplyMatrix(A, B) {
+            return [
+                [A[0][0]*B[0][0] + A[0][1]*B[1][0], A[0][0]*B[0][1] + A[0][1]*B[1][1]],
+                [A[1][0]*B[0][0] + A[1][1]*B[1][0], A[1][0]*B[0][1] + A[1][1]*B[1][1]]
+            ];
+        }
+        
+        function multiplyMatrixVector(M, v) {
+            return [
+                M[0][0]*v[0] + M[0][1]*v[1],
+                M[1][0]*v[0] + M[1][1]*v[1]
+            ];
+        }
+        
+        function drawGrid(ctx, color = '#333', isometric = false) {
+            const centerX = ctx.canvas.width / 2;
+            const centerY = ctx.canvas.height / 2;
+            const gridSize = 40;
+            
+            ctx.strokeStyle = color + '33';
+            ctx.lineWidth = 1;
+            
+            // Líneas de cuadrícula
+            for (let i = -5; i <= 5; i++) {
+                ctx.beginPath();
+                ctx.moveTo(centerX + i * gridSize, centerY - 200);
+                ctx.lineTo(centerX + i * gridSize, centerY + 200);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX - 200, centerY + i * gridSize);
+                ctx.lineTo(centerX + 200, centerY + i * gridSize);
+                ctx.stroke();
+            }
+        }
+        
+        function drawAxes(ctx, basis = 'standard') {
+            const centerX = ctx.canvas.width / 2;
+            const centerY = ctx.canvas.height / 2;
+            const scale = 80;
+            
+            if (basis === 'standard') {
+                // Eje X (rojo)
+                drawArrow(ctx, centerX, centerY, centerX + scale, centerY, '#ff0066', 3);
+                ctx.fillStyle = '#ff0066';
+                ctx.font = 'bold 18px Arial';
+                ctx.fillText('X (e₁)', centerX + scale + 10, centerY + 5);
+                
+                // Eje Y (rojo)
+                drawArrow(ctx, centerX, centerY, centerX, centerY - scale, '#ff0066', 3);
+                ctx.fillStyle = '#ff0066';
+                ctx.fillText('Y (e₂)', centerX + 5, centerY - scale - 10);
+            } else {
+                // Eje v₁ = (1,1) normalizado y escalado (verde)
+                const v1x = scale * Math.cos(Math.PI/4);
+                const v1y = -scale * Math.sin(Math.PI/4);
+                drawArrow(ctx, centerX, centerY, centerX + v1x, centerY + v1y, '#00ff88', 3);
+                ctx.fillStyle = '#00ff88';
+                ctx.font = 'bold 18px Arial';
+                ctx.fillText('v₁ (1,1)', centerX + v1x + 10, centerY + v1y - 10);
+                
+                // Eje v₂ = (-1,1) normalizado y escalado (verde)
+                const v2x = scale * Math.cos(3*Math.PI/4);
+                const v2y = -scale * Math.sin(3*Math.PI/4);
+                drawArrow(ctx, centerX, centerY, centerX + v2x, centerY + v2y, '#00ff88', 3);
+                ctx.fillStyle = '#00ff88';
+                ctx.fillText('v₂ (-1,1)', centerX + v2x - 70, centerY + v2y - 10);
+            }
+        }
+        
+        function drawArrow(ctx, fromX, fromY, toX, toY, color, width = 2) {
+            const headlen = 12;
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const angle = Math.atan2(dy, dx);
+            
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.lineWidth = width;
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), 
+                      toY - headlen * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), 
+                      toY - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        function drawSpaceship(ctx, x, y, angle, color = '#00bfff') {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(-angle * Math.PI / 180);
+            
+            // Cuerpo de la nave (triángulo)
+            ctx.fillStyle = color;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(20, 0);
+            ctx.lineTo(-15, -12);
+            ctx.lineTo(-15, 12);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Ventana
+            ctx.fillStyle = '#ffff00';
+            ctx.beginPath();
+            ctx.arc(0, 0, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Indicador de dirección
+            ctx.strokeStyle = '#ff00ff';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(20, 0);
+            ctx.lineTo(35, 0);
+            ctx.stroke();
+            
+            ctx.restore();
+        }
+        
+        function drawTestVector(ctx, vec, color = '#ffff00') {
+            const centerX = ctx.canvas.width / 2;
+            const centerY = ctx.canvas.height / 2;
+            const scale = 60;
+            
+            drawArrow(ctx, centerX, centerY, 
+                     centerX + vec[0] * scale, 
+                     centerY - vec[1] * scale, 
+                     color, 4);
+            
+            ctx.fillStyle = color;
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText(`(${vec[0].toFixed(2)}, ${vec[1].toFixed(2)})`, 
+                        centerX + vec[0] * scale + 15, 
+                        centerY - vec[1] * scale);
+        }
+        
+        function render() {
+            // Limpiar canvas
+            ctxWorld.fillStyle = '#1a1a2e';
+            ctxWorld.fillRect(0, 0, worldCanvas.width, worldCanvas.height);
+            ctxCamera.fillStyle = '#1a1a2e';
+            ctxCamera.fillRect(0, 0, cameraCanvas.width, cameraCanvas.height);
+            
+            const centerX = worldCanvas.width / 2;
+            const centerY = worldCanvas.height / 2;
+            
+            // Dibujar cuadrículas y ejes
+            drawGrid(ctxWorld);
+            drawAxes(ctxWorld, 'standard');
+            
+            drawGrid(ctxCamera);
+            drawAxes(ctxCamera, 'isometric');
+            
+            // Dibujar nave en base mundial
+            drawSpaceship(ctxWorld, centerX, centerY, currentAngle, '#00bfff');
+            
+            // Dibujar nave en base de cámara (mismo ángulo, visualmente)
+            drawSpaceship(ctxCamera, centerX, centerY, currentAngle, '#00ff88');
+            
+            // Si hay vector de prueba, dibujarlo y su transformación
+            if (testVec) {
+                // En base mundial
+                const rotated = multiplyMatrixVector(getCurrentRotationMatrix(), testVec);
+                drawTestVector(ctxWorld, testVec, '#ffff00');
+                drawTestVector(ctxWorld, rotated, '#ff00ff');
+                
+                // En base de cámara
+                drawTestVector(ctxCamera, testVec, '#ffff00');
+                drawTestVector(ctxCamera, rotated, '#ff00ff');
+            }
+            
+            // Actualizar displays
+            updateMatrixDisplays();
+        }
+        
+        function getCurrentRotationMatrix() {
+            const angleRad = currentAngle * Math.PI / 180;
+            const cos = Math.cos(angleRad);
+            const sin = Math.sin(angleRad);
+            return [
+                [cos, -sin],
+                [sin, cos]
+            ];
+        }
+        
+        function updateMatrixDisplays() {
+            const R = getCurrentRotationMatrix();
+            
+            document.getElementById('matrixB').innerHTML = 
+                `[ ${R[0][0].toFixed(2)}  ${R[0][1].toFixed(2)} ]<br>` +
+                `[ ${R[1][0].toFixed(2)}  ${R[1][1].toFixed(2)} ]`;
+            
+            // Calcular R en base B': P^{-1} R P
+            const RP = multiplyMatrix(R, P);
+            const RBprime = multiplyMatrix(Pinv, RP);
+            
+            document.getElementById('matrixBprime').innerHTML = 
+                `[ ${RBprime[0][0].toFixed(2)}  ${RBprime[0][1].toFixed(2)} ]<br>` +
+                `[ ${RBprime[1][0].toFixed(2)}  ${RBprime[1][1].toFixed(2)} ]`;
+            
+            document.getElementById('angleDisplay').textContent = currentAngle + '°';
+            
+            // Propiedades invariantes
+            const det = R[0][0] * R[1][1] - R[0][1] * R[1][0];
+            const trace = R[0][0] + R[1][1];
+            document.getElementById('detDisplay').textContent = det.toFixed(2);
+            document.getElementById('traceDisplay').textContent = trace.toFixed(2);
+        }
+        
+        function rotateLeft() {
+            currentAngle += 90;
+            currentAngle = currentAngle % 360;
+            updateInterpretation();
+            render();
+        }
+        
+        function rotateRight() {
+            currentAngle -= 90;
+            if (currentAngle < 0) currentAngle += 360;
+            updateInterpretation();
+            render();
+        }
+        
+        function reset() {
+            currentAngle = 0;
+            testVec = null;
+            updateInterpretation();
+            render();
+        }
+        
+        function testVector(x, y) {
+            testVec = [x, y];
+            updateInterpretation();
+            render();
+        }
+        
+        function updateInterpretation() {
+            const text = document.getElementById('interpretationText');
+            
+            if (currentAngle === 0) {
+                text.textContent = 'Las matrices son idénticas porque la rotación de 90° es una operación intrínseca que se mantiene igual independientemente del sistema de coordenadas. La cámara isométrica (45°) es ortogonal, por lo que preserva las propiedades de la rotación.';
+            } else {
+                const rotations = Math.floor(currentAngle / 90);
+                text.textContent = `La nave ha rotado ${currentAngle}° (${rotations} veces 90°). Ambas matrices siguen siendo idénticas porque representan la MISMA transformación geométrica vista desde diferentes sistemas de referencia. Las matrices semejantes comparten determinante, traza y valores propios.`;
+            }
+            
+            if (testVec) {
+                const R = getCurrentRotationMatrix();
+                const rotated = multiplyMatrixVector(R, testVec);
+                text.textContent += ` Vector (${testVec[0]}, ${testVec[1]}) se transforma a (${rotated[0].toFixed(2)}, ${rotated[1].toFixed(2)}) en AMBAS bases.`;
+            }
+        }
+        
+        // Inicializar
+        render();
+    </script>
+</body>
+</html>
