@@ -46,7 +46,7 @@ El documento está organizado siguiendo estas unidades:
 
 - **/documento/**
   - Guía principal con ejercicios y explicaciones.
-  - Plan Sugerido
+  - Plan Sugerido.
 
 - **/interactivo/**
   - Páginas HTML con visualizaciones y apoyo interactivo para algunos conceptos.
