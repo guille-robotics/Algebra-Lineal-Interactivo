@@ -15,28 +15,38 @@ La idea es que docentes y estudiantes puedan conectar los contenidos del curso c
 El documento está organizado siguiendo estas unidades:
 
 ### 1) Geometría Vectorial
-
+ - 1. Mecánica: Análisis de Fuerzas en un Soporte de Pared.
+ - 2. Robótica: Análisis del Espacio de Trabajo de un Brazo Robótico.
+ - 3. Informática: Cálculo de Normales en Mallas Triangulares para Renderizado 3D.
 
 ---
 
 ### 2) Matrices
-
+ - 4. Mecánica: Análisis de Estructuras mediante el Método de Nodos.
+ - 5. Electrónica: Análisis de Circuitos Resistivos mediante Leyes de Kirchhoff.
+ - 6. Transporte: Análisis de Flujo Vehicular en Redes Urbanas.
 
 ---
 
 ### 3) Espacios Vectoriales
+ - 7. Mecánica: Análisis de Esfuerzos Principales en Álabes de Turbina.
+ - 8. Electrónica: Modos Normales en Circuitos LC Acoplados Capacitivamente.
+ - 9. Construcción: Ingeniería Sismo-resistente.
 
 ---
 
 ### 4) Transformaciones Lineales
-
+ - 10. Electrónica: Línea de transmisión de larga distancia.
+ - 11. Mecánica: Mecánica de Medios Continuos.
+ - 12. Informática: Computación Gráfica moderna.
 
 ---
 
 ## 📂 Contenido del repositorio
 
 - **/documento/**
-  - Guía principal (PDF o LaTeX) con ejercicios y explicaciones.
+  - Guía principal con ejercicios y explicaciones.
+  - Plan Sugerido
 
 - **/interactivo/**
   - Páginas HTML con visualizaciones y apoyo interactivo para algunos conceptos.
@@ -68,7 +78,7 @@ Este repositorio busca apoyar a docentes de matemáticas e ingeniería a:
 
 ---
 
-## 📌 Autor / Contacto
+## 📌 Autor
 
 Material desarrollado por: **Guillermo Cid Ampuero**  y **Rodrigo Carvajal**
 
