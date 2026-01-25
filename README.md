@@ -10,61 +10,26 @@ La idea es que docentes y estudiantes puedan conectar los contenidos del curso c
 
 ---
 
-## 📚 Unidades del curso (según programa)
+## 📚 Unidades del curso (según programa sugerido)
 
 El documento está organizado siguiendo estas unidades:
 
 ### 1) Geometría Vectorial
-- Vectores en \( \mathbb{R}^2 \) y \( \mathbb{R}^3 \)
-- Producto punto, norma, ángulo entre vectores
-- Distancia entre vectores
-- Producto vectorial
-- Rectas y planos en el espacio
-  - Rectas en \( \mathbb{R}^2 \) y representaciones
-  - Rectas en \( \mathbb{R}^3 \) y representaciones
-  - Planos en \( \mathbb{R}^3 \)
-  - Intersección plano–plano y plano–recta
-  - Distancias
-- Proyecciones y aplicaciones
-  - Aplicaciones del vector proyección
+
 
 ---
 
 ### 2) Matrices
-- Álgebra de matrices
-- Inversa de matrices
-  - Operaciones elementales por filas
-  - Determinante
-- Sistemas de ecuaciones lineales
-  - Resolución de SEL cuadrados con determinante no nulo
+
 
 ---
 
 ### 3) Espacios Vectoriales
-- Definición de espacio vectorial y ejemplos
-- Subespacios vectoriales
-- Combinaciones lineales y subespacio generado
-- Dependencia e independencia lineal
-- Bases y matriz de cambio de base
-- Dimensión de un espacio vectorial y propiedades
-  - Coordenadas
-- Suma directa de espacios vectoriales
-  - Intersección
-  - Suma de espacios
-  - Suma directa
-- Valores y vectores propios
-- Diagonalización de una matriz
 
 ---
 
 ### 4) Transformaciones Lineales
-- Definición de transformación lineal
-- Álgebra de transformaciones lineales
-- Núcleo e imagen de una TL
-- Isomorfismo de transformaciones lineales
-- Correspondencia entre matrices y transformaciones lineales
-- Matrices asociadas respecto a bases diferentes
-- Potencias de una transformación lineal y uso de la base que diagonaliza
+
 
 ---
 
@@ -76,7 +41,7 @@ El documento está organizado siguiendo estas unidades:
 - **/interactivo/**
   - Páginas HTML con visualizaciones y apoyo interactivo para algunos conceptos.
 
-> Nota: Los nombres de carpetas pueden variar dependiendo de cómo lo subas, pero la idea general es mantener separados el documento y lo interactivo.
+
 
 ---
 
@@ -105,5 +70,5 @@ Este repositorio busca apoyar a docentes de matemáticas e ingeniería a:
 
 ## 📌 Autor / Contacto
 
-Material desarrollado por: **Guillermo Cid Ampuero**  
-Si deseas colaborar o proponer mejoras, puedes abrir un **Issue** o escribir mediante GitHub.
+Material desarrollado por: **Guillermo Cid Ampuero**  y **Rodrigo Carvajal**
+
